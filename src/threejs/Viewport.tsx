@@ -8,10 +8,12 @@ import {
   useGLTF,
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { type JSX } from "react";
+import { useMemo, type JSX } from "react";
 import { useStore, type Store } from "../state";
 import { LightComponent } from "./lights/LightComponent";
 import { shallow } from "zustand/shallow";
+
+import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 
 const selection = (s: Store) => ({
   sceneUrl: s.sceneUrl,
@@ -23,6 +25,7 @@ const selection = (s: Store) => ({
 
 export function Viewport(): JSX.Element {
   const { ids, sceneUrl } = useStore(selection, shallow);
+  useMemo(() => RectAreaLightUniformsLib.init(), []);
 
   return (
     <div className="w-full h-full">
