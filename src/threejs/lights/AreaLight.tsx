@@ -8,7 +8,6 @@ export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
   const ctrl = useRef<TC>(null!);
   const group = useRef<THREE.Group>(null!);
   const light = useRef<THREE.RectAreaLight>(null!);
-  const store = useStore();
 
   useLayoutEffect(() => {
     const l = useStore.getState().lights.find((x) => x.id === id)!;
@@ -31,18 +30,26 @@ export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
   }, [id]);
 
   useEffect(() => {
-    const c = ctrl.current;
-    if (c) {
-      c.setMode(store.transformMode || "translate");
-    }
-  }, [store.transformMode]);
-
-  useEffect(() => {
-    const c = ctrl.current;
-    if (c) {
-      c.showX = c.showY = c.showZ = store.selection?.id === id;
-    }
-  }, [store.selection]);
+    const unsubMode = useStore.subscribe(
+      (s) => s.transformMode,
+      (m) => {
+        ctrl.current?.setMode(m ?? "translate");
+      },
+      { fireImmediately: true },
+    );
+    const unsubSel = useStore.subscribe(
+      (s) => s.selection,
+      (sel) => {
+        const on = sel ? sel.id === id : false;
+        ctrl.current.enabled = on;
+        ctrl.current.showX = ctrl.current.showY = ctrl.current.showZ = on;
+      },
+    );
+    return () => {
+      unsubMode();
+      unsubSel();
+    };
+  }, [id]);
 
   const apply = () => {
     const sx = ctrl.current.worldScale.x || 1;
@@ -72,7 +79,7 @@ export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial wireframe color="yellow" />
         </mesh>
-        <rectAreaLight ref={light} />
+        <rectAreaLight args={["white", 10, 1, 1]} ref={light} />
       </group>
     </TransformControls>
   );

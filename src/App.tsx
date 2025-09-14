@@ -15,10 +15,34 @@ function App() {
     });
   }, []);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
+
+    reader.onload = () => {
+      const arrayBuffer = reader.result;
+      if (!arrayBuffer) return;
+      const url = URL.createObjectURL(new Blob([arrayBuffer]));
+      store.setScene(arrayBuffer);
+      store.setSceneUrl(url.toString());
+    };
+  };
+
   return (
     <div className="w-full h-full flex flex-col overflow-clip">
       <div className="w-full h-20 bg-neutral-800 items-center flex">
-        <div className="px-4">
+        <div className="px-4 space-x-2 flex">
+          <input
+            className="file-input file-input-bordered file-input-primary w-full"
+            type="file"
+            accept=".glb, .gltf"
+            onChange={handleFileChange}
+          />
           <button
             onClick={() => store.addLight("area")}
             type="button"

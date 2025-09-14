@@ -21,3 +21,16 @@ export type Registry = {
   group: Record<string, THREE.Object3D | null>;
   light: Record<string, THREE.RectAreaLight | null>;
 };
+
+export type Patch = Partial<
+  Pick<
+    Light,
+    | "position"
+    | "rotation"
+    | "width"
+    | "height"
+    | "intensity"
+    | "color"
+    | "name"
+  >
+>;

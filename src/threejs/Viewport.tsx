@@ -5,15 +5,17 @@ import {
   Grid,
   OrbitControls,
   PerspectiveCamera,
+  useGLTF,
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import type { JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { AreaLight } from "./lights/AreaLight";
 import { useStore } from "../state";
 import { useShallow } from "zustand/react/shallow";
 
 export function Viewport(): JSX.Element {
   const ids = useStore(useShallow((s) => s.lights.map((l) => l.id)));
+  const { sceneUrl } = useStore();
 
   return (
     <div className="w-full h-full">
@@ -26,9 +28,14 @@ export function Viewport(): JSX.Element {
           sectionThickness={1}
           infiniteGrid
         />
-        <Box args={[10, 10, 1, 1, 1, 1]} position={[0, 0, 0]}>
-          <meshStandardMaterial roughness={0} metalness={0} color={"grey"} />
-        </Box>
+
+        {sceneUrl ? (
+          <Model url={sceneUrl} />
+        ) : (
+          <Box args={[1, 1, 1, 1, 1, 1]} position={[0, 0, 0]}>
+            <meshStandardMaterial roughness={0} metalness={0} color={"grey"} />
+          </Box>
+        )}
 
         {ids.map((i) => (
           <AreaLight key={i} id={i} />
@@ -45,5 +52,14 @@ export function Viewport(): JSX.Element {
         </GizmoHelper>
       </Canvas>
     </div>
+  );
+}
+
+function Model({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return (
+    <group>
+      <primitive object={scene} />
+    </group>
   );
 }
