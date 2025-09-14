@@ -39,7 +39,6 @@ function App() {
 
   return (
     <>
-      <Modal text={modalText} />
       <div className="w-full h-full flex flex-col overflow-clip">
         <div className="w-full h-20 bg-neutral-800 items-center flex">
           <div className="px-4 space-x-2 flex">
@@ -66,7 +65,7 @@ function App() {
             <button
               onClick={() => {
                 setModalText(exportLights());
-                my_modal_2.showModal();
+                setOpenModal(true);
               }}
               type="button"
               className="btn btn-primary"
@@ -75,6 +74,10 @@ function App() {
             </button>
           </div>
         </div>
+
+        {openModal && (
+          <Modal onClose={() => setOpenModal(false)} text={modalText} />
+        )}
         <div className="grid grid-cols-12 h-full">
           <div className="col-span-2 bg-neutral-700 ">
             <ul className="menu w-full ">

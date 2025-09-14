@@ -1,7 +1,19 @@
 import { useStore } from "../state";
+import hljs from "highlight.js/lib/core";
+import jsx from "highlight.js/lib/languages/javascript";
+import "highlight.js/styles/github-dark.css";
 
-const start = "export function Lights() {\n\treturn (\n\t\t<group>";
-const end = "\t\t</group>\n\t);\n}";
+hljs.registerLanguage("jsx", jsx);
+
+const start = `import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
+
+
+export function Lights() {
+    RectAreaLightUniformsLib.init();
+
+    return (
+        <group>`;
+const end = "        </group>\n    );\n}";
 
 const IGNORE_FIELDS = ["id", "type", "name"];
 
@@ -11,7 +23,7 @@ export function exportLights() {
   useStore.getState().lights.map((l) => {
     switch (l.type) {
       case "area":
-        const t = `\t\t\t<rectAreaLight ${Object.entries(l)
+        const t = `            <rectAreaLight ${Object.entries(l)
           .filter(([k]) => !IGNORE_FIELDS.includes(k))
           .map(([k, v]) => addField(k, v))
           .join(" ")} />`;
@@ -26,7 +38,7 @@ export function exportLights() {
 
   components.push(end);
 
-  return components.join("\n");
+  return hljs.highlight(components.join("\n"), { language: "jsx" }).value;
 }
 
 function addField(name: string, value: any): string {
