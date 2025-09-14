@@ -8,14 +8,21 @@ import {
   useGLTF,
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useEffect, useState, type JSX } from "react";
-import { AreaLight } from "./lights/AreaLight";
-import { useStore } from "../state";
-import { useShallow } from "zustand/react/shallow";
+import { type JSX } from "react";
+import { useStore, type Store } from "../state";
+import { LightComponent } from "./lights/LightComponent";
+import { shallow } from "zustand/shallow";
+
+const selection = (s: Store) => ({
+  sceneUrl: s.sceneUrl,
+  ids: s.lights.map((l) => ({
+    id: l.id,
+    type: l.type,
+  })),
+});
 
 export function Viewport(): JSX.Element {
-  const ids = useStore(useShallow((s) => s.lights.map((l) => l.id)));
-  const { sceneUrl } = useStore();
+  const { ids, sceneUrl } = useStore(selection, shallow);
 
   return (
     <div className="w-full h-full">
@@ -38,7 +45,7 @@ export function Viewport(): JSX.Element {
         )}
 
         {ids.map((i) => (
-          <AreaLight key={i} id={i} />
+          <LightComponent key={i.id} {...i} />
         ))}
 
         <GizmoHelper

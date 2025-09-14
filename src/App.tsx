@@ -50,6 +50,13 @@ function App() {
           >
             Area Light
           </button>
+          <button
+            onClick={() => store.addLight("environment")}
+            type="button"
+            className="btn btn-primary"
+          >
+            Environment Light
+          </button>
         </div>
       </div>
       <div className="grid grid-cols-12 h-full">

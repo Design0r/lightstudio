@@ -1,12 +1,12 @@
-import { create } from "zustand";
 import type { Controls } from "./types/controls";
-import type { Light, LightType, Patch, Registry } from "./types/lights";
+import type { LightType, Patch, Registry, Light } from "./types/lights";
 import { generateUUID } from "three/src/math/MathUtils.js";
 import type { TransformControls } from "three/examples/jsm/Addons.js";
 import * as THREE from "three";
 import { subscribeWithSelector } from "zustand/middleware";
+import { createWithEqualityFn } from "zustand/traditional";
 
-type Store = {
+export type Store = {
   sceneUrl: string | null;
   setSceneUrl: (value: string | null) => void;
   scene: ArrayBuffer | string | null;
@@ -37,7 +37,7 @@ type Store = {
     | null;
 };
 
-export const useStore = create<Store>()(
+export const useStore = createWithEqualityFn<Store>()(
   subscribeWithSelector((set, get) => ({
     sceneUrl: null,
     setSceneUrl: (value) => set(() => ({ sceneUrl: value })),
@@ -53,18 +53,44 @@ export const useStore = create<Store>()(
     lights: [],
     addLight: (type: LightType) => {
       const id = generateUUID();
-      const light: Light = {
-        name: `${type}-light-${get().lights.filter((l) => l.type === type).length}`,
-        type: type,
-        position: [0, 0, 0],
-        rotation: [0, 0, 0],
-        scale: [1, 1, 1],
-        width: 1,
-        height: 1,
-        color: "white",
-        intensity: 10,
-        id: id,
-      };
+      let light: Light;
+      const name = `${type}-light-${get().lights.filter((l) => l.type === type).length}`;
+
+      switch (type) {
+        case "area":
+          light = {
+            name: name,
+            type: type,
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1],
+            width: 1,
+            height: 1,
+            color: "white",
+            intensity: 10,
+            id: id,
+          };
+          break;
+        case "directional":
+          throw new Error("unimplemented");
+        case "environment":
+          light = {
+            id: id,
+            name: name,
+            type: type,
+            background: true,
+            bgRotation: [0, 0, 0],
+            envRotation: [0, 0, 0],
+            bgIntensity: 1,
+            envIntensity: 1,
+            url: "",
+          };
+          break;
+        case "point":
+          throw new Error("unimplemented");
+        default:
+          throw new Error("unknown type");
+      }
       set({ lights: [...get().lights, light] });
       set({ selection: light });
     },

@@ -67,7 +67,7 @@ export function AttributeEditor() {
       return;
     }
     pull();
-    const onChange = () => pull();
+    const onChange = pull;
     tc.addEventListener("change", onChange);
     return () => tc.removeEventListener("change", onChange);
   }, [tc, pull]);

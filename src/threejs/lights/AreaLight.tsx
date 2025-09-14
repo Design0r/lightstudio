@@ -1,10 +1,10 @@
 import { TransformControls } from "@react-three/drei";
-import { memo, useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import type { TransformControls as TC } from "three/examples/jsm/Addons.js";
 import { useStore } from "../../state";
 
-export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
+export function AreaLight({ id }: { id: string }) {
   const ctrl = useRef<TC>(null!);
   const group = useRef<THREE.Group>(null!);
   const light = useRef<THREE.RectAreaLight>(null!);
@@ -35,7 +35,7 @@ export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
       (m) => {
         ctrl.current?.setMode(m ?? "translate");
       },
-      { fireImmediately: true },
+      { fireImmediately: false, equalityFn: Object.is },
     );
     const unsubSel = useStore.subscribe(
       (s) => s.selection,
@@ -44,6 +44,7 @@ export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
         ctrl.current.enabled = on;
         ctrl.current.showX = ctrl.current.showY = ctrl.current.showZ = on;
       },
+      { fireImmediately: false, equalityFn: Object.is },
     );
     return () => {
       unsubMode();
@@ -83,4 +84,4 @@ export const AreaLight = memo(function AreaLight({ id }: { id: string }) {
       </group>
     </TransformControls>
   );
-});
+}
