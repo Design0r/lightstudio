@@ -15,19 +15,43 @@ export function Lights() {
         <group>`;
 const end = "        </group>\n    );\n}";
 
-const IGNORE_FIELDS = ["id", "type", "name"];
+const IGNORE_FIELDS = new Set([
+  "id",
+  "type",
+  "name",
+  "position",
+  "rotation",
+  "scale",
+  "width",
+  "height",
+]);
+
+const INCLUDE_FIELDS = new Set(["worldPosition", "worldRotation"]);
 
 export function exportLights() {
   const components = [start];
 
-  useStore.getState().lights.map((l) => {
+  const state = useStore.getState();
+
+  state.lights.map((l) => {
     switch (l.type) {
       case "area":
-        const t = `            <rectAreaLight ${Object.entries(l)
-          .filter(([k]) => !IGNORE_FIELDS.includes(k))
-          .map(([k, v]) => addField(k, v))
-          .join(" ")} />`;
+        const fields = Object.entries(l)
+          .filter(([k]) => !IGNORE_FIELDS.has(k))
+          .map(([k, v]) => addField(k, v));
+
+        const ctrl = state.refs.tc[l.id];
+        if (!ctrl) return;
+        const ctrlFields = Object.entries(ctrl)
+          .filter(([k]) => INCLUDE_FIELDS.has(k))
+          .map(([k, v]) => addField(k, v));
+
+        ctrlFields.push(addField("width", ctrl.worldScale.x));
+        ctrlFields.push(addField("height", ctrl.worldScale.y));
+
+        const t = `            <rectAreaLight ${ctrlFields.concat(fields).join(" ")} />`;
         components.push(t);
+
         break;
 
       case "environment":
@@ -46,6 +70,8 @@ function addField(name: string, value: any): string {
     return `${name}={[${value.join(",")}]}`;
   } else if (typeof value === "string") {
     return `${name}={"${value}"}`;
+  } else if (typeof value === "object") {
+    return addField(name, [value.x, value.y, value.z]);
   }
   return `${name}={${value}}`;
 }

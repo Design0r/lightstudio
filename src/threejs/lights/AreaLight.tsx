@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import type { TransformControls as TC } from "three/examples/jsm/Addons.js";
 import { useStore } from "../../state";
+import type { AreaLight as AL } from "../../types/lights";
 
 export function AreaLight({ id }: { id: string }) {
   const ctrl = useRef<TC>(null!);
@@ -10,7 +11,7 @@ export function AreaLight({ id }: { id: string }) {
   const light = useRef<THREE.RectAreaLight>(null!);
 
   useLayoutEffect(() => {
-    const l = useStore.getState().lights.find((x) => x.id === id)!;
+    const l = useStore.getState().lights.find((x) => x.id === id)! as AL;
     light.current.color.set(l.color);
     light.current.intensity = l.intensity;
     light.current.width = l.width;
@@ -35,7 +36,7 @@ export function AreaLight({ id }: { id: string }) {
       (m) => {
         ctrl.current?.setMode(m ?? "translate");
       },
-      { fireImmediately: false, equalityFn: Object.is },
+      { fireImmediately: true, equalityFn: Object.is },
     );
     const unsubSel = useStore.subscribe(
       (s) => s.selection,
@@ -59,6 +60,15 @@ export function AreaLight({ id }: { id: string }) {
     const newH = Math.max(0.01, sy);
     light.current.width = newW;
     light.current.height = newH;
+
+    useStore.setState((s) => {
+      const l = s.lights.find((l) => l.id === id);
+      if (!l) return s;
+      const al = l as AL;
+      const p = light.current.position;
+      al.position = [p.x, p.y, p.z];
+      return s;
+    }, false);
   };
 
   return (
